@@ -80,7 +80,7 @@ def patrones_temporizacion(qr: list[list]):
         qr[6][i] = "1"
         qr[i][6] = "1"
 
-def esquina_formato(qr: list[list], medio_byte: str = "0100"):
+def esquina_formato(qr: list[list], medio_byte: str):
     indice_byte = 0
     for i in range(len(qr) - 1, len(qr) - 3, -1):
         for j in range(len(qr) - 1, len(qr) - 3, -1):
@@ -108,87 +108,87 @@ def mensaje(qr: list[list], mensaje: list[str], mascara: str):
     restriccion_hor = [(6, i) for i in range(10, len(qr) - 8, 1)]
     restriccion_vert = [(i, 6) for i in range(10, len(qr) - 8, 1)]
     restriccion_total = restriccion_sup_izq + restriccion_inf_izq + restriccion_sup_der + restriccion_inf_der + restriccion_vert + restriccion_hor
-    mensaje_en_bits = ''.join(mensaje) + "00001101100"
+    mensaje_en_bits = ''.join(mensaje)
     posicion = (len(qr) - 7, len(qr) - 1)
     maxCol = len(qr) - 1
     cambio = False
     direccion = -1
     for bit in mensaje_en_bits:
-        print(posicion)
+        #print(posicion)
         if posicion[1] >= 0:
             if(posicion[0] < 0 or posicion[0] >= len(qr)):
-                print("Cambio de direccion")
+                #print("Cambio de direccion")
                 direccion *= -1
                 posicion_edit = list(posicion)
                 posicion_edit[0] += direccion
                 maxCol -= 2
                 posicion_edit[1] = maxCol
                 posicion = tuple(posicion_edit)
-                print(posicion)
+                #print(posicion)
             if posicion not in restriccion_total:
                 qr[posicion[0]][posicion[1]] = bit
             elif posicion in restriccion_sup_der:
-                print("Choque superior derecho")
+                #print("Choque superior derecho")
                 direccion *= -1
                 posicion_edit = list(posicion)
                 posicion_edit[0] += direccion
                 maxCol -= 2
                 posicion_edit[1] = maxCol
                 posicion = tuple(posicion_edit)
-                print(posicion)
+                #print(posicion)
                 qr[posicion[0]][posicion[1]] = bit
             elif posicion in restriccion_inf_der:
-                print("Choque inferior derecho")
+                #print("Choque inferior derecho")
                 if posicion[1] != len(qr) - 9:
-                    print("Choque con filas dobles")
+                    #print("Choque con filas dobles")
                     posicion_edit = list(posicion)
                     posicion_edit[0] += (direccion * 5)
                     posicion = tuple(posicion_edit)
-                    print(posicion)
+                    #print(posicion)
                 else:
-                    print("Choque con filas individuales")
+                    #print("Choque con filas individuales")
                     posicion_edit = list(posicion)
                     posicion = tuple(posicion_edit)
                     posicion_edit[1] -= 1
                     cambio = not cambio
                     posicion = tuple(posicion_edit)
-                    print(posicion)
+                    #print(posicion)
                 qr[posicion[0]][posicion[1]] = bit
             elif posicion in restriccion_hor:
-                print("Choque con restriccion horizontal")
+                #print("Choque con restriccion horizontal")
                 posicion_edit = list(posicion)
                 posicion_edit[0] += direccion
                 posicion = tuple(posicion_edit)
-                print(posicion)
+                #print(posicion)
                 qr[posicion[0]][posicion[1]] = bit
             elif posicion in restriccion_inf_izq:
-                print("Choque con restriccion inferior izquierda")
+                #print("Choque con restriccion inferior izquierda")
                 if(posicion[0] == len(qr) - 1):
-                    print("Choque inicial")
+                    #print("Choque inicial")
                     posicion_edit = list(posicion)
                     posicion_edit[0] += (direccion * 8)
                     posicion = tuple(posicion_edit)
-                    print(posicion)
+                    #print(posicion)
                 else:
-                    print("Choque interno")
+                    #print("Choque interno")
                     direccion *= -1
                     posicion_edit = list(posicion)
                     posicion_edit[0] += direccion
                     maxCol -= 2
                     posicion_edit[1] = maxCol
                     posicion = tuple(posicion_edit)
-                    print(posicion)
+                    #print(posicion)
                 qr[posicion[0]][posicion[1]] = bit
             elif posicion in restriccion_vert:
-                print("Choque con restriccion vertical")
+                #print("Choque con restriccion vertical")
                 posicion_edit = list(posicion)
                 maxCol -= 1
                 posicion_edit[1] = maxCol
                 posicion = tuple(posicion_edit)
-                print(posicion)
+                #print(posicion)
                 qr[posicion[0]][posicion[1]] = bit
             elif posicion in restriccion_sup_izq:
-                print("Choque con restriccion superior izquierda")
+                #print("Choque con restriccion superior izquierda")
                 direccion *= -1
                 posicion_edit = list(posicion)
                 posicion_edit[0] += direccion
@@ -197,7 +197,7 @@ def mensaje(qr: list[list], mensaje: list[str], mascara: str):
                 if posicion_edit[1] == 6:
                     posicion_edit[1] -= 1
                 posicion = tuple(posicion_edit)
-                print(posicion)
+                #print(posicion)
                 qr[posicion[0]][posicion[1]] = bit
             
             posicion_edit = list(posicion)
@@ -208,26 +208,25 @@ def mensaje(qr: list[list], mensaje: list[str], mascara: str):
                 posicion_edit[1] -= 1
             cambio = not cambio
             posicion = tuple(posicion_edit)
-    """
     if mascara == "011":
-        print("Aplicando mascara")
+        #print("Aplicando mascara")
         for i in range(0, len(qr), 3):
             for j in range(0, len(qr)):
                 if tuple([j, i]) not in restriccion_total:
                     qr[j][i] = "1" if qr[j][i] == "0" else "0"
-    """
 
 def lineas_formato(qr: list[list], combinacion: str):
+    mascaraFormatop = "100000001111100"
     mascaraFormato = TABLA_FORMATO[combinacion]
     indiceBit = 0
     for i in range(6):
-        qr[8][i] = mascaraFormato[indiceBit]
+        qr[8][i] = mascaraFormatop[indiceBit]
         indiceBit += 1
-    qr[8][7] = mascaraFormato[indiceBit]
+    qr[8][7] = mascaraFormatop[indiceBit]
     indiceBit += 1
     for i in range(8, -1, -1):
         if i != 6:
-            qr[i][8] = mascaraFormato[indiceBit]
+            qr[i][8] = mascaraFormatop[indiceBit]
             indiceBit += 1
     indiceBit = 0
     for i in range(1, 8):
@@ -243,12 +242,24 @@ def generar_qr(qr: list[list], arrayBinario: list[str]):
     marcador_alineacion(qr)
     patrones_temporizacion(qr)
     qr[len(qr) - 8][8] = "1"
-    esquina_formato(qr)
-    tam_mensaje(qr, format(len(arrayBinario),"08b"))
-    arrayBinario = reed_solomon_encode(arrayBinario, 16, exp_table, log_table)
+    formato = "0100"
+    esquina_formato(qr, formato)
+    longitudFormateada = format(len(arrayBinario),"08b")
+    tam_mensaje(qr, longitudFormateada)
     arrayBinario = list(map(lambda x: format(x, "08b"), arrayBinario))
+    newBin = arrayBinario.copy()
+    newBin.insert(0, longitudFormateada)
+    newBin.insert(0, formato)
+    newBin.append("0000")
+    stringQR = ''.join(newBin)
+    newBin = [stringQR[i : i + 8] for i in range(0, len(stringQR), 8)]
+    newInt = [int(i, 2) for i in newBin]
+    encoded = reed_solomon_encode(newInt, 16, exp_table, log_table)
+    final = [element for element in encoded if element not in newInt]
+    arrayBinario.append("0000")
+    arrayBinario += list(map(lambda x: format(x, "08b"), final))
     mensaje(qr, arrayBinario, "011")
-    lineas_formato(qr, "00011")
+    lineas_formato(qr, "00010")
 
 cadena = "www.youtube.com/veritasium"
 arrayBinario = [ord(i) for i in cadena]
