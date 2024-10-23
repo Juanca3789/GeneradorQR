@@ -262,6 +262,9 @@ def generar_qr(qr: list[list], arrayBinario: list[str]):
     lineas_formato(qr, "00010")
 
 cadena = "www.youtube.com/veritasium"
+print(len(cadena))
+cadena = "quantumnodelink.store/nosm"
+print(len(cadena))
 arrayBinario = [ord(i) for i in cadena]
 codigoqr = [["0" for _ in range(25)] for _ in range(25)]
 generar_qr(codigoqr, arrayBinario)
