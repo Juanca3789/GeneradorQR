@@ -37,6 +37,17 @@ TABLA_FORMATO = {
     "11111" : "010101111101101"
 }
 
+MASCARAS_QR = {
+    "000" : lambda i, j : (i + j) % 2 == 0,
+    "001" : lambda i, _ : i % 2 == 0,
+    "010" : lambda _, j : j % 3 == 0,
+    "011" : lambda i, j : (i + j) % 3 == 0,
+    "100" : lambda i, j : ((i//2) + (j//3)) % 2 == 0,
+    "101" : lambda i, j : (i * j) % 2 + (i * j) % 3 == 0,
+    "110" : lambda i, j : ((i * j) % 2 + (i * j) % 3) % 2 == 0,
+    "111" : lambda i, j : ((i + j) % 2 + (i * j) % 3) % 2 == 0
+}
+
 def mostrar_qr(root: tkinter.Tk, qr: list[list]):
     root.grid_columnconfigure(0, weight=1)
     root.grid_rowconfigure(0, weight=1)
@@ -100,7 +111,7 @@ def range_bidimensional(start_i, stop_i, step_i, start_j, stop_j, step_j):
             yield i, j
 
 
-def mensaje(qr: list[list], mensaje: list[str], mascara: str):
+def mensaje(qr: list[list], mensaje: list[str], mascara : str):
     restriccion_sup_izq = [(i, j) for i, j in range_bidimensional(0, 9, 1, 0, 9, 1)]
     restriccion_inf_izq = [(i, j) for i, j in range_bidimensional(len(qr) - 8, len(qr), 1, 0, 9, 1)]
     restriccion_sup_der = [(i, j) for i, j in range_bidimensional(0, 9, 1, len(qr) - 8, len(qr), 1)]
@@ -208,12 +219,12 @@ def mensaje(qr: list[list], mensaje: list[str], mascara: str):
                 posicion_edit[1] -= 1
             cambio = not cambio
             posicion = tuple(posicion_edit)
-    if mascara == "011":
-        #print("Aplicando mascara")
-        for i in range(0, len(qr), 3):
-            for j in range(0, len(qr)):
-                if tuple([j, i]) not in restriccion_total:
-                    qr[j][i] = "1" if qr[j][i] == "0" else "0"
+    def mascara_qr(qr: list[list], mascara: str):
+        for i in range(len(qr)):
+            for j in range(len(qr[0])):
+                if (tuple([i, j]) not in restriccion_total) and MASCARAS_QR[mascara](i, j):
+                    qr[i][j] = "0" if qr[i][j] == "1" else "1"
+    mascara_qr(qr, mascara)
 
 def lineas_formato(qr: list[list], combinacion: str):
     mascaraFormatop = "100000001111100"
@@ -255,20 +266,22 @@ def generar_qr(qr: list[list], arrayBinario: list[str]):
     newBin = [stringQR[i : i + 8] for i in range(0, len(stringQR), 8)]
     newInt = [int(i, 2) for i in newBin]
     encoded = reed_solomon_encode(newInt, 16, exp_table, log_table)
-    final = [element for element in encoded if element not in newInt]
+    final = [encoded[i] for i in range(len(newInt), len(encoded))]
     arrayBinario.append("0000")
     arrayBinario += list(map(lambda x: format(x, "08b"), final))
     mensaje(qr, arrayBinario, "011")
-    lineas_formato(qr, "00010")
+    lineas_formato(qr, "00011")
 
 cadena = "www.youtube.com/veritasium"
-print(len(cadena))
-cadena = "quantumnodelink.store/nosm"
-print(len(cadena))
+cadena = "quantumnodelink.store/nose"
 arrayBinario = [ord(i) for i in cadena]
 codigoqr = [["0" for _ in range(25)] for _ in range(25)]
 generar_qr(codigoqr, arrayBinario)
 root = tkinter.Tk()
-root.geometry("400x400")
-mostrar_qr(root, codigoqr)
+root.geometry("450x450")
+root.configure(bg="white")
+frame_con_margen = tkinter.Frame(root, width=400, height=400, bg="white")
+frame_con_margen.place(relx=0.5, rely=0.5, anchor="center", width=400, height=400)
+root.resizable(False, False)
+mostrar_qr(frame_con_margen, codigoqr)
 root.mainloop()
